@@ -31,24 +31,16 @@ class MesinMinuman:
     def beli_produk(self, kode_masuk: str, uang_masuk: int):
         # Cek apakah Kode Produk Valid
         if kode_masuk not in self.inventaris:
-            # print(f"Kode {kode_produk} tidak terdaftar didalam Mesin")
-            # return
-
             raise ProdukTidakAdaError(kode_masuk)
 
         # Cek apakah Stok Barang Masih ada
         produk_terpilih = self.inventaris[kode_masuk]
 
         if produk_terpilih.stok_produk <= 0: 
-            # print(f"{produk_terpilih.nama_produk} Habis!")
-            # return
-
             raise StokHabisError(produk_terpilih.nama_produk)
 
         # Cek apakah Jumlah Uang Cukup
         if uang_masuk < produk_terpilih.harga_produk:
-            # print(f"Uang anda Kurang! Harga {produk_terpilih.nama_produk} sebesar Rp{produk_terpilih.harga_produk:,}")
-
             raise UangKurangError(produk_terpilih.harga_produk, uang_masuk)
 
         print("lewat")
@@ -70,36 +62,37 @@ class StokHabisError(MesinError):
 class UangKurangError(MesinError):
     """Muncul Saat Nominal Uang yang Dimasukkan Kurang dari Harga Produk yang ada"""
     def __init__(self, harga_produk: int, harga_masuk: int):
-        super().__init__(f"Saldo tidak cukup: Saldo Rp{harga_masuk}, "
-                         f"diminta Rp{harga_produk}")
         self.harga_produk = harga_produk
         self.harga_masuk = harga_masuk
+        
+        super().__init__(f"Saldo Anda Tidak Cukup! Saldo yang dimasukkan sebesar Rp{harga_masuk:,} \n"
+                         f"Harga Minuman sebesar Rp{harga_produk:,}, jadi Saldo anda kurang Rp{harga_masuk:,}")
 
     @property
     def kekurangan(self) -> int: 
         return self.harga_produk - self.harga_masuk
 
 if __name__ == "__main__": 
+    # Inisiasi Produk Awal
+    p1 = Produk("M-01", "Teh Botol", 5000, 10)
+    p2 = Produk("M-02", "Kopi Susu", 8000, 5)
+    p3 = Produk("M-03", "Air Mineral", 4000, 15)
+    p4 = Produk("M-04", "Soda Jeruk", 7000, 0)
+
+    # Inisiasi Mesin Minuman
+    mesin = MesinMinuman()
+
+    # Tambahkan Produk-Produk Minuman ke dalam Mesin
+    mesin.tambah_produk(p1)
+    mesin.tambah_produk(p2)
+    mesin.tambah_produk(p3)
+    mesin.tambah_produk(p4)
+    print("\n")
+
+    mesin.lihat_produk()
+    print("\n")
+    
     try: 
-        # Inisiasi Produk Awal
-        p1 = Produk("M-01", "Teh Botol", 5000, 10)
-        p2 = Produk("M-02", "Kopi Susu", 8000, 5)
-        p3 = Produk("M-03", "Air Mineral", 4000, 15)
-        p4 = Produk("M-04", "Soda Jeruk", 7000, 0)
-
-        # Inisiasi Mesin Minuman
-        mesin = MesinMinuman()
-
-        # Tambahkan Produk-Produk Minuman ke dalam Mesin
-        mesin.tambah_produk(p1)
-        mesin.tambah_produk(p2)
-        mesin.tambah_produk(p3)
-        mesin.tambah_produk(p4)
-        print("\n")
-
-        mesin.lihat_produk()
-        print("\n")
-
         # Cek apakah Validasi Kode Produk Salah bisa Tertangkap
         # mesin.beli_produk("M-00", 1000) # Berhasil
         # print("\n")
@@ -110,6 +103,15 @@ if __name__ == "__main__":
 
         # Cek apakah Validasi Uang Tidak Cukup bisa Tertangkap
         mesin.beli_produk("M-02", 5000)
-        print("\n")
+        # print("\n")
+    
+    except ProdukTidakAdaError as e: 
+        print(e)
+    except StokHabisError as e: 
+        print(e)
+    except UangKurangError as e: 
+        print(e)
     except MesinError as e: 
         print(e)
+    finally: 
+        print("Transaksi Selesai!")

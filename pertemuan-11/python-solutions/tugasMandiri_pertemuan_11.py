@@ -1,3 +1,5 @@
+import os
+
 class Produk: 
     def __init__(self, kode_produk: str, nama_produk: str, harga_produk: int, stok_produk: int):
         self.kode_produk = kode_produk
@@ -9,7 +11,7 @@ class Produk:
         return f"[{self.kode_produk}] {self.nama_produk} - Rp{self.harga_produk:,} (stok: {self.stok_produk})"
 
 class MesinMinuman: 
-    def __init__(self):
+    def __init__(self, struk: list):
         # Dibuat Dictionary untuk menyimpan Minuman-Minuman
         # Key: Kode Produk      |     Value: Objek Produk (Seluruh data Produk)
         self.inventaris = {}
@@ -43,7 +45,15 @@ class MesinMinuman:
         if uang_masuk < produk_terpilih.harga_produk:
             raise UangKurangError(produk_terpilih.harga_produk, uang_masuk)
 
-        print("lewat")
+        print(f"Berhasil Membeli {produk_terpilih.nama_produk}")
+        produk_terpilih.stok_produk -= 1
+        struk.append(produk_terpilih)
+
+        sisa_uang = uang_masuk - produk_terpilih.harga_produk
+        if sisa_uang == 0:
+            print("Uang anda Pas")
+            return
+        print(f"Sisa Kembalian Anda: Rp{sisa_uang:,}")
 
 # === ERROR HANDLING CLASSESS ===
 class MesinError(Exception):
@@ -78,40 +88,69 @@ if __name__ == "__main__":
     p2 = Produk("M-02", "Kopi Susu", 8000, 5)
     p3 = Produk("M-03", "Air Mineral", 4000, 15)
     p4 = Produk("M-04", "Soda Jeruk", 7000, 0)
+    p5 = Produk("M-05", "Energy Drink", 6500, 4)
+
+    # Inisiasi struk belanja
+    struk = []
 
     # Inisiasi Mesin Minuman
-    mesin = MesinMinuman()
+    mesin = MesinMinuman(struk)
 
     # Tambahkan Produk-Produk Minuman ke dalam Mesin
     mesin.tambah_produk(p1)
     mesin.tambah_produk(p2)
     mesin.tambah_produk(p3)
     mesin.tambah_produk(p4)
+    mesin.tambah_produk(p5)
     print("\n")
 
     mesin.lihat_produk()
     print("\n")
-    
-    try: 
-        # Cek apakah Validasi Kode Produk Salah bisa Tertangkap
-        # mesin.beli_produk("M-00", 1000) # Berhasil
-        # print("\n")
 
-        # Cek apakah Validasi Stok Barang Habis bisa Tertangkap
-        # mesin.beli_produk("M-04", 8000)
-        # print("\n")
+    # Jumlah Pengujian: Minimal enam Pengujian, bebas mau situasi berhasil atau tidak 
+    daftar_pengujian = [
+        {
+            "kode": "M-01", # Pengujian Berhasil 
+            "uang": 5000, 
+        }, 
+        {
+            "kode": "M-100", # Pengujian Gagal
+            "uang": 5000
+        }, 
+        {
+            "kode": "M-02", # Pengujian Berhasil
+            "uang": 10000
+        }, 
+        {
+            "kode": "M-04", # Pengujian Gagal 
+            "uang": 7000
+        }, 
+        {
+            "kode": "M-03", # Pengujian Gagal 
+            "uang": 3000
+        }, 
+        {
+            "kode": "M-05", # Pengujian Berhasil
+            "uang": 7000
+        }
+    ]
 
-        # Cek apakah Validasi Uang Tidak Cukup bisa Tertangkap
-        mesin.beli_produk("M-02", 5000)
-        # print("\n")
-    
-    except ProdukTidakAdaError as e: 
-        print(e)
-    except StokHabisError as e: 
-        print(e)
-    except UangKurangError as e: 
-        print(e)
-    except MesinError as e: 
-        print(e)
-    finally: 
-        print("Transaksi Selesai!")
+    for i, test in enumerate(daftar_pengujian, start=1):
+        print("\n=== MEMBELI BARANG ===")
+        try:
+            mesin.beli_produk(test["kode"], test["uang"])
+        except ProdukTidakAdaError as e: 
+            print(e)
+        except StokHabisError as e: 
+            print(e)
+        except UangKurangError as e: 
+            print(e)
+        except MesinError as e: 
+            print(e)
+        finally: 
+            print("Transaksi Selesai!")
+            os.system("pause")
+
+    # print(struk)
+    for i in struk:
+        print(i)

@@ -11,10 +11,13 @@ class Produk:
         return f"[{self.kode_produk}] {self.nama_produk} - Rp{self.harga_produk:,} (stok: {self.stok_produk})"
 
 class MesinMinuman: 
-    def __init__(self, struk: list):
+    def __init__(self):
         # Dibuat Dictionary untuk menyimpan Minuman-Minuman
         # Key: Kode Produk      |     Value: Objek Produk (Seluruh data Produk)
         self.inventaris = {}
+        self.riwayat_penjualan = {}
+        self.total_pendapatan = 0
+
 
     def tambah_produk(self, produk: Produk):
         # Setiap minuman memiliki kode unik-nya masing-masing. Bagian ini memeriksa duplikat dari kode unik-tersebut
@@ -24,6 +27,33 @@ class MesinMinuman:
         # Menyimpan Informasi Minuman ke dalam Mesin
         self.inventaris[produk.kode_produk] = produk
         print(f"Berhasil menambahkan {produk.nama_produk} ke dalam Mesin!") 
+
+    def cetak_struk(self):
+        print("\n" + "-" * 60)
+        print("==> Struk / Laporan Penjualan")
+        print("-" * 60)
+
+        if not self.riwayat_penjualan:
+            print("Belum ada transaksi yang tercatat.")
+        else:
+            total_item_terjual = 0
+            for nama_produk, jumlah in self.riwayat_penjualan.items():
+                print(f" - {nama_produk} x {jumlah}")
+                total_item_terjual += jumlah
+            print("-" * 60)
+            print(f"Total Keseluruhan Item Terjual: {total_item_terjual}")
+        print("-" * 60)
+        print(f"Total Pendapatan: Rp{self.total_pendapatan:,}")
+        
+        print("-" * 60)
+        print("Sisa Stok Produk di Mesin")        
+        if not self.inventaris:
+            print("Mesin Kosong.")
+        else:
+            for produk in self.inventaris.values():
+                status_stok = f"{produk.stok_produk} pcs" if produk.stok_produk > 0 else "HABIS (0 pcs)"
+                print(f"-> [{produk.kode_produk}] {produk.nama_produk:<12} : {status_stok}")
+        print("-" * 60)
 
 
     def lihat_produk(self):
@@ -47,9 +77,16 @@ class MesinMinuman:
 
         print(f"Berhasil Membeli {produk_terpilih.nama_produk}")
         produk_terpilih.stok_produk -= 1
-        struk.append(produk_terpilih)
-
         sisa_uang = uang_masuk - produk_terpilih.harga_produk
+        # struk.append(produk_terpilih)
+
+        if produk_terpilih.nama_produk in self.riwayat_penjualan:
+            self.riwayat_penjualan[produk_terpilih.nama_produk] += 1
+        else:
+            self.riwayat_penjualan[produk_terpilih.nama_produk] = 1
+
+        self.total_pendapatan += produk_terpilih.harga_produk
+
         if sisa_uang == 0:
             print("Uang anda Pas")
             return
@@ -94,7 +131,7 @@ if __name__ == "__main__":
     struk = []
 
     # Inisiasi Mesin Minuman
-    mesin = MesinMinuman(struk)
+    mesin = MesinMinuman()
 
     # Tambahkan Produk-Produk Minuman ke dalam Mesin
     mesin.tambah_produk(p1)
@@ -136,7 +173,7 @@ if __name__ == "__main__":
     ]
 
     for i, test in enumerate(daftar_pengujian, start=1):
-        print("\n=== MEMBELI BARANG ===")
+        print("\n=== MELAKUKAN TRANSAKSI =======================")
         try:
             mesin.beli_produk(test["kode"], test["uang"])
         except ProdukTidakAdaError as e: 
@@ -148,9 +185,10 @@ if __name__ == "__main__":
         except MesinError as e: 
             print(e)
         finally: 
-            print("Transaksi Selesai!")
+            print("Mesin siap melayani pembeli berikutnya!")
             os.system("pause")
 
     # print(struk)
-    for i in struk:
-        print(i)
+    # for i in struk:
+    #     print(i)
+    mesin.cetak_struk()
